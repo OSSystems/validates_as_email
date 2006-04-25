@@ -1,0 +1,17 @@
+Validacao de Email
+==================
+
+Plugin de validacao do formato de um endereco de email e tambem se o nome de usuario existe no servidor SMTP.
+
+Uso:
+  Adicione ao modelo:
+    validates_as_email :nome_do_campo, :online => opcao
+
+    Onde opcao pode ser:
+    true => Verifica junto ao servidor STMP se o nome de usuario existe.
+    nil => So verifica o formato do email...
+
+Exemplo:
+  class Usuario < ActiveRecord::Base
+    validates_as_email :email, :online => true
+  end
