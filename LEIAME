@@ -9,7 +9,7 @@ Uso:
 
     Onde opcao pode ser:
     true => Verifica junto ao servidor STMP se o nome de usuario existe.
-    nil => So verifica o formato do email...
+    nil  => So verifica o formato do email (Default).
 
 Exemplo:
   class Usuario < ActiveRecord::Base
