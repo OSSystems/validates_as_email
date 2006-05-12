@@ -1,42 +1,61 @@
-require File.dirname(__FILE__) + '/abstract_unit'
-require '../lib/validates_as_email'
+require 'abstract_unit'
 
-# Modelo
-class EmailData < ActiveRecord::Base
-  set_table_name "emails"
+# Modelos
+class EmailOnline < ActiveRecord::Base
+  def self.columns; []; end
+  attr_accessor :mail
+  validates_as_email :mail, :online => true
+end
+
+class EmailOffline < ActiveRecord::Base
+  def self.columns; []; end
+  attr_accessor :mail
+  validates_as_email :mail
 end
 
 # Testes
 class EmailsTest < Test::Unit::TestCase
   def test_email_invalido_offline
-    EmailData.validates_as_email :mail, :online => nil
-    
-    email_invalido = EmailData.create(:id => 1, :mail => "123aa@a.k")
-
-    assert ( not email_invalido.save ), "Salvou email invalido."
+    addresses = [
+      '-- dave --@example.com', # (spaces are invalid unless enclosed in quotation marks)
+      '[dave]@example.com', # (square brackets are invalid, unless contained within quotation marks)
+      '.dave@example.com', # (the local part of a domain name cannot start with a period)
+      'Max@Job 3:14', 
+      'Job@Book of Job',
+      'J. P. \'s-Gravezande, a.k.a. The Hacker!@example.com',
+      ]
+    addresses.each do |address|
+      assert !EmailOffline.new(:mail => address).valid?, "#{address} aceito mas invalido"
+    end
   end
 
   def test_email_valido_offline
-    EmailData.validates_as_email :mail, :online => nil
-    
-    email_valido = EmailData.create(:id => 2, :mail => "gustavosbarreto@gmail.com")
-
-    assert ( email_valido.save ), "Nao salvou um email valido que deveria ser salvo."
+    addresses = [
+      '+1~1+@example.com',
+      '{_dave_}@example.com',
+      '"[[ dave ]]"@example.com',
+      'dave."dave"@example.com',
+      'test@localhost',
+      'test@example.com', 
+      'test@example.co.uk',
+      'test@example.com.br',
+      '"J. P. \'s-Gravezande, a.k.a. The Hacker!"@example.com',
+      'me@[187.223.45.119]',
+      'someone@123.com',
+      'simon&garfunkel@songs.com'
+      ]
+    addresses.each do |address|
+      assert EmailOffline.new(:mail => address).valid?, "#{address} valido mas rejeitado"
+    end
   end
 
   def test_email_invalido_online
-    EmailData.validates_as_email :mail, :online => true
-    
-    email_invalido = EmailData.create(:id => 3, :mail => "ubirajararodrigues@debian.org")
-
-    assert ( not email_invalido.save ), "Salvou email invalido."
+    address = "ubirajararodrigues@debian.org"
+    assert !EmailOnline.new(:mail => address).valid?, "aceitou #{address}, mas a conta *nao* existe"
   end
 
   def test_email_valido_online
-    EmailData.validates_as_email :mail, :online => true
-   
-    email_valido = EmailData.create(:id => 4, :mail => "gustavosbarreto@gmail.com")
-
-    assert ( email_valido.save ), "Nao salvou um email valido que deveria ser salvo."
+    address = "gustavosbarreto@gmail.com"
+    assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas a conta existe"
   end
 end

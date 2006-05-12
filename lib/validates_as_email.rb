@@ -22,6 +22,7 @@
 require 'socket'
 require 'resolv'
 require 'timeout'
+require 'rfc2822'
 
 include Socket::Constants
 
@@ -30,7 +31,7 @@ module Email
     # Funcao principal de validacao
     def self.valida_email(email = nil, online = nil)
       # Valida o formato do email...
-      if email =~ /[^0-9][a-zA-Z0-9]@[^0-9][a-zA-Z0-9]+\.[a-zA-Z]{2,}$/
+      if email =~ RFC2822::EmailAddress
         return true if online != true
 
         #puts "online? #{online}"
@@ -45,6 +46,7 @@ module Email
         socket = Socket.new(AF_INET, SOCK_STREAM, 0)
 
         dns =  Resolv::DNS.new.getresources(host, Resolv::DNS::Resource::IN::MX)
+
         mx_record = dns[0].exchange.to_s
 
         # Se o host nao tiver um MX Record usa o proprio host como SMTP
