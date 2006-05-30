@@ -92,7 +92,7 @@ module ActiveRecord
         configuration.update(attr_names.pop) if attr_names.last.is_a?(Hash)
 
         validates_each(attr_names, configuration) do |record, attr_name, value|
-          unless RFC2822::check_addr_spec(value, configuration[:online])          
+          unless value.blank? or RFC2822::check_addr_spec(value, configuration[:online])          
             record.errors.add(attr_name, configuration[:message])
           end
         end

@@ -13,8 +13,25 @@ class EmailOffline < ActiveRecord::Base
   validates_as_email :mail
 end
 
+class EmailOfflineObrigatorio < ActiveRecord::Base
+  def self.columns; []; end
+  attr_accessor :mail
+  validates_as_email :mail
+  validates_presence_of :mail
+end
+
 # Testes
 class EmailsTest < Test::Unit::TestCase
+  def test_email_vazio
+    assert EmailOffline.new(:mail => '').valid?, "string vazia eh valida mas foi rejeitada"
+    assert EmailOffline.new(:mail => nil).valid?, "nil eh valido mas foi rejeitado"
+  end
+  
+  def test_email_obrigatorio
+    assert !EmailOfflineObrigatorio.new(:mail => '').valid?, "e-mail obrigatorio de valor vazio passou na validacao"
+    assert !EmailOfflineObrigatorio.new(:mail => nil).valid?, "e-mail obrigatorio de valor nulo passou na validacao"
+  end
+  
   def test_email_invalido_offline
     addresses = [
       '-- dave --@example.com', # (spaces are invalid unless enclosed in quotation marks)
