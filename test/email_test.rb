@@ -75,4 +75,9 @@ class EmailsTest < Test::Unit::TestCase
     address = "gustavosbarreto@gmail.com"
     assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas a conta existe"
   end
+  
+  def test_email_sintaxe_valida_mas_host_sem_mx
+    address = 'validates_as_email@localhost'
+    assert !EmailOnline.new(:mail => address).valid?, "localhost deve ter mx ou smtp rodando"
+  end
 end

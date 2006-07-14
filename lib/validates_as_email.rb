@@ -32,7 +32,7 @@ module RFC2822
     if email =~ RFC2822::EmailAddress
       return true if online != true
 
-      #puts "online? #{online}"
+      #puts "online? #{online}" #RAILS_DEFAULT_LOGGER.debug "online? #{online}"
       host = email.split("@")[1]
       # Verifica se o host existe
       begin
@@ -44,20 +44,18 @@ module RFC2822
       socket = Socket.new(AF_INET, SOCK_STREAM, 0)
 
       dns =  Resolv::DNS.new.getresources(host, Resolv::DNS::Resource::IN::MX)
-
-      mx_record = dns[0].exchange.to_s
+      mx_record = dns[0].exchange.to_s unless dns.empty?
 
       # Se o host nao tiver um MX Record usa o proprio host como SMTP
       smtp_server = mx_record == nil ? host : mx_record
       sockaddr = Socket.pack_sockaddr_in(25, smtp_server)
 
-      # begin
-      #  timeout(2) do
-          socket.connect(sockaddr)
-       # end
-      #rescue
-       # return nil
-      #end
+      # Soh que o proprio host pode nao ter SMTP...
+      begin
+        socket.connect(sockaddr)
+      rescue Errno::ECONNREFUSED
+        return nil
+      end
 
       # Conectou? estamos prontos pra conversar?
       if socket.recvfrom(255).to_s.chomp =~ /^220/
