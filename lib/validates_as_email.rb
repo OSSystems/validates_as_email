@@ -60,17 +60,26 @@ module RFC2822
       # Conectou? estamos prontos pra conversar?
       if socket.recvfrom(255).to_s.chomp =~ /^220/
         # Conversando...
-        socket.write("HELO #{smtp_server}\r\n")
+        socket.write("HELO #{host}\r\n")
         out = socket.recvfrom(255).to_s.chomp
+        #RAILS_DEFAULT_LOGGER.debug "#{smtp_server} ---------------------------"
+        #RAILS_DEFAULT_LOGGER.debug "HELO #{host}"
+        #RAILS_DEFAULT_LOGGER.debug out
 
         socket.write("MAIL FROM: <#{email}>\r\n")
         out = socket.recvfrom(255).to_s.chomp
+        #RAILS_DEFAULT_LOGGER.debug "MAIL FROM: <#{email}>"
+        #RAILS_DEFAULT_LOGGER.debug out
 
         socket.write("RCPT TO: <#{email}>\r\n")
         out = socket.recvfrom(255).to_s.chomp
+        #RAILS_DEFAULT_LOGGER.debug "RCPT TO: <#{email}>"
+        #RAILS_DEFAULT_LOGGER.debug out
 
         # Foi um prazer
         socket.write("QUIT\r\n")
+        #RAILS_DEFAULT_LOGGER.debug "QUIT"
+        #RAILS_DEFAULT_LOGGER.debug socket.recvfrom(255).to_s.chomp
         socket.close
 
         # Se a ultima coisa que o SMTP server enviou comecar com 250 o email existe, se não...
