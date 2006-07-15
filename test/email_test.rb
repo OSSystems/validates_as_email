@@ -77,8 +77,8 @@ class EmailsTest < Test::Unit::TestCase
     assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas a conta existe"
   end
   
-  def test_email_valido_redirecionado_online
-    ["gustavo@ossystems.com.br", "andre@boaideia.inf.br"].each do |address|
+  def test_alias_valido_online
+    ["gustavo@ossystems.com.br", "redirecionamento@boaideia.inf.br"].each do |address|
       assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas o redirecionamento existe"
     end
   end
@@ -86,10 +86,5 @@ class EmailsTest < Test::Unit::TestCase
   def test_email_sintaxe_valida_mas_host_sem_mx
     address = "validates_as_email@localhost"
     assert !EmailOnline.new(:mail => address).valid?, "localhost deve ter mx ou smtp rodando, nao devia para passar neste teste"
-  end
-  
-  def test_email_alias_online
-    address = "redirecionamento@boaideia.inf.br"
-    assert EmailOnline.new(:mail => address).valid?, "nao aceitou o alias #{address}"
   end
 end
