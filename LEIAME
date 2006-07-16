@@ -5,12 +5,25 @@ Plugin de validacao do formato de um endereco de email e tambem se o nome de usu
 
 Uso:
   Adicione ao modelo:
-    validates_as_email :nome_do_campo, :online => opcao
+    validates_as_email :nome_do_campo, PARAMETROS
+    
+    PARAMETROS tem como valores padrao:
+      :online => nil,
+      :message => "is invalid",
+      :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again..."
 
-    Onde opcao pode ser:
-    true => Verifica junto ao servidor STMP se o nome de usuario existe.
-    nil  => So verifica o formato do email (Default).
-
+  Descricao dos PARAMETROS:
+    :online => [true|nil]
+      true, define se a validacao junto ao servidor SMTP deve ocorrer
+      nil, validar somente a sintaxe do e-mail
+      
+    :message => "mensagem"
+      define a mensagem de erro caso o e-mail tenha sintaxe invalida ou nao exista
+    
+    :timeout => "mensagem"
+      define a mensagem de retorno da validacao caso a conexao com o servidor 
+      SMTP expire
+    
 Exemplo:
   class Usuario < ActiveRecord::Base
     validates_as_email :email, :online => true

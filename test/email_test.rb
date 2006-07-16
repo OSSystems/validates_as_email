@@ -78,9 +78,8 @@ class EmailsTest < Test::Unit::TestCase
   end
   
   def test_alias_valido_online
-    ["gustavo@ossystems.com.br", "redirecionamento@boaideia.inf.br"].each do |address|
-      assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas o redirecionamento existe"
-    end
+    address = "redirecionamento@boaideia.inf.br"
+    assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas o redirecionamento existe"
   end
   
   def test_email_sintaxe_valida_mas_host_sem_mx
