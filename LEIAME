@@ -10,7 +10,8 @@ Uso:
     PARAMETROS tem como valores padrao:
       :online => nil,
       :message => "is invalid",
-      :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again..."
+      :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
+      :multiple => false
 
   Descricao dos PARAMETROS:
     :online => [true|nil]
@@ -23,6 +24,10 @@ Uso:
     :timeout => "mensagem"
       define a mensagem de retorno da validacao caso a conexao com o servidor 
       SMTP expire
+
+    :multiple => [true|false]
+      true, aceita varios e-mails no mesmo campo, separados por virgula
+      false, aceita somente um e-mail no campo
     
 Exemplo:
   class Usuario < ActiveRecord::Base

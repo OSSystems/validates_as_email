@@ -90,17 +90,21 @@ module ActiveRecord
       def validates_as_email(*attr_names)
         configuration = {
           :message => "is invalid",
-          :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again..."
+          :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
+          :multiple => false
           }
         configuration.update(attr_names.pop) if attr_names.last.is_a?(Hash)
 
         validates_each(attr_names, configuration) do |record, attr_name, value|
           unless value.blank?
             begin
-              # levanta excessao padrao se nao validar o endereco
-              raise unless RFC2822::check_addr_spec(value)
-              # levanta excessao padrao se for pra validar online e nao passar no teste
-              raise if configuration[:online] and not RFC2822::check_addr_online(value)
+              value.split(',').each do |email|
+                email.strip! if configuration[:multiple]
+                # levanta excessao padrao se nao validar o endereco
+                raise unless RFC2822::check_addr_spec(email)
+                # levanta excessao padrao se for pra validar online e nao passar no teste
+                raise if configuration[:online] and not RFC2822::check_addr_online(email)
+              end
             rescue Errno::ETIMEDOUT
               # pode ocorrer no check_addr_online
               record.errors.add(attr_name, configuration[:timeout])

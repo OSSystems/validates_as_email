@@ -13,6 +13,12 @@ class EmailOffline < ActiveRecord::Base
   validates_as_email :mail
 end
 
+class MultipleEmailOffline < ActiveRecord::Base
+  def self.columns; []; end
+  attr_accessor :mail
+  validates_as_email :mail, :multiple => true
+end
+
 class EmailOfflineObrigatorio < ActiveRecord::Base
   def self.columns; []; end
   attr_accessor :mail
@@ -85,5 +91,16 @@ class EmailsTest < Test::Unit::TestCase
   def test_email_sintaxe_valida_mas_host_sem_mx
     address = "validates_as_email@localhost"
     assert !EmailOnline.new(:mail => address).valid?, "localhost deve ter mx ou smtp rodando, nao devia para passar neste teste"
+  end
+
+  def test_multiplos_emails
+    addresses = "um@exemplo.com.br, dois@exemplo.com.br,tres@exemplo.com.br , quatro@exemplo.com.br "
+    assert MultipleEmailOffline.new(:mail => addresses).valid?, "#{addresses} valido mas rejeitado"
+    assert !EmailOffline.new(:mail => addresses).valid?, "#{addresses} validado mas multiple eh falso"
+  end
+
+  def test_multiplos_emails_com_problema
+    addresses = "um@exemplo.com.br, dois da silva <dois@exemplo.com.br>"
+    assert !MultipleEmailOffline.new(:mail => addresses).valid?, "#{addresses} invalido mas validado"
   end
 end
