@@ -11,7 +11,8 @@ Uso:
       :online => nil,
       :message => "is invalid",
       :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
-      :multiple => false
+      :multiple => false,
+      :blacklist => []
 
   Descricao dos PARAMETROS:
     :online => [true|nil]
@@ -28,6 +29,9 @@ Uso:
     :multiple => [true|false]
       true, aceita varios e-mails no mesmo campo, separados por virgula
       false, aceita somente um e-mail no campo
+
+    :blacklist => array de regex
+      invalida enderecos que forem reconhecidos pelo regex do array
     
 Exemplo:
   class Usuario < ActiveRecord::Base

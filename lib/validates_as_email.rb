@@ -91,7 +91,8 @@ module ActiveRecord
         configuration = {
           :message => "is invalid",
           :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
-          :multiple => false
+          :multiple => false,
+          :blacklist => []
           }
         configuration.update(attr_names.pop) if attr_names.last.is_a?(Hash)
 
@@ -100,6 +101,8 @@ module ActiveRecord
             begin
               value.split(',').each do |email|
                 email.strip! if configuration[:multiple]
+                # levanta excessao se estiver na blacklist
+                raise unless configuration[:blacklist].select {|regex| email =~ regex}.empty?
                 # levanta excessao padrao se nao validar o endereco
                 raise unless RFC2822::check_addr_spec(email)
                 # levanta excessao padrao se for pra validar online e nao passar no teste

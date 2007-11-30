@@ -13,6 +13,18 @@ class EmailOffline < ActiveRecord::Base
   validates_as_email :mail
 end
 
+class EmailBlacklist < ActiveRecord::Base
+  def self.columns; []; end
+  attr_accessor :mail
+  validates_as_email :mail, :blacklist => [/gmail.com.br$/, /hotmail.com.br$/]
+end
+
+class MultipleEmailBlacklist < ActiveRecord::Base
+  def self.columns; []; end
+  attr_accessor :mail
+  validates_as_email :mail, :blacklist => [/gmail.com.br$/, /hotmail.com.br$/], :multiple => true
+end
+
 class MultipleEmailOffline < ActiveRecord::Base
   def self.columns; []; end
   attr_accessor :mail
@@ -28,6 +40,24 @@ end
 
 # Testes
 class EmailsTest < Test::Unit::TestCase
+  def test_email_com_blacklist_vazia
+    assert EmailOffline.new(:mail => 'andre@teste.com').valid?, "endereco andre@teste.com devia passar na blacklist vazia"
+  end
+
+  def test_email_com_blacklist
+    assert !EmailBlacklist.new(:mail => 'andre@gmail.com.br').valid?, "endereco andre@gmail.com.br devia parar na blacklist"
+    assert EmailBlacklist.new(:mail => 'andre@gmail.com').valid?, "endereco andre@gmail.com devia passar na blacklist"
+
+    assert !EmailBlacklist.new(:mail => 'andre@hotmail.com.br').valid?, "endereco andre@hotmail.com.br devia parar na blacklist"
+    assert EmailBlacklist.new(:mail => 'andre@hotmail.com').valid?, "endereco andre@hotmail.com devia passar na blacklist"
+  end
+
+  def test_multiple_emails_com_blacklist
+    assert !MultipleEmailBlacklist.new(:mail => 'andre@gmail.com.br, andre@hotmail.com.br').valid?, "enderecos andre@gmail.com.br e andre@hotmail.com.br deviam parar na blacklist"
+    assert !MultipleEmailBlacklist.new(:mail => 'andre@gmail.com, andre@hotmail.com.br').valid?, "endereco andre@gmail.com, andre@hotmail.com.br devia parar na blacklist"
+    assert MultipleEmailBlacklist.new(:mail => 'andre@gmail.com, andre@hotmail.com').valid?, "endereco andre@gmail.com, andre@hotmail.com deviam passar na blacklist"
+  end
+
   def test_email_vazio
     assert EmailOffline.new(:mail => '').valid?, "string vazia eh valida mas foi rejeitada"
     assert EmailOffline.new(:mail => nil).valid?, "nil eh valido mas foi rejeitado"
