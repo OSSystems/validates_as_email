@@ -90,7 +90,7 @@ module ActiveRecord
     module ClassMethods
       def validates_as_email(*attr_names)
         configuration = {
-          :message => "is invalid",
+          :message => :invalid,
           :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
           :multiple => false,
           :blacklist => []
