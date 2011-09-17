@@ -1,38 +1,32 @@
-require 'abstract_unit'
+require File.expand_path(File.dirname(__FILE__) + '/test_helper')
 
 # Modelos
-class EmailOnline < ActiveRecord::Base
-  def self.columns; []; end
+class EmailOnline < Tableless
   attr_accessor :mail
   validates_as_email :mail, :online => true
 end
 
-class EmailOffline < ActiveRecord::Base
-  def self.columns; []; end
+class EmailOffline < Tableless
   attr_accessor :mail
   validates_as_email :mail
 end
 
-class EmailBlacklist < ActiveRecord::Base
-  def self.columns; []; end
+class EmailBlacklist < Tableless
   attr_accessor :mail
   validates_as_email :mail, :blacklist => [/gmail.com.br$/, /hotmail.com.br$/]
 end
 
-class MultipleEmailBlacklist < ActiveRecord::Base
-  def self.columns; []; end
+class MultipleEmailBlacklist < Tableless
   attr_accessor :mail
   validates_as_email :mail, :blacklist => [/gmail.com.br$/, /hotmail.com.br$/], :multiple => true
 end
 
-class MultipleEmailOffline < ActiveRecord::Base
-  def self.columns; []; end
+class MultipleEmailOffline < Tableless
   attr_accessor :mail
   validates_as_email :mail, :multiple => true
 end
 
-class EmailOfflineObrigatorio < ActiveRecord::Base
-  def self.columns; []; end
+class EmailOfflineObrigatorio < Tableless
   attr_accessor :mail
   validates_as_email :mail
   validates_presence_of :mail

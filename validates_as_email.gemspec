@@ -8,10 +8,12 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["André Camargo",
                    "Everton J. Carpes",
+                   "Lucas Dutra Nunes",
                    "Luis Gustavo S. Barreto",
                    "Otávio Salvador"]
   s.email       = ["andre@boaideia.inf.br",
                    "everton.carpes@gmail.com",
+                   "ldnunes@ossystems.com.br",
                    "gustavo@ossystems.com.br",
                    "otavio@ossystems.com.br"]
   s.homepage    = "http://www.ossystems.com.br/"
@@ -24,4 +26,7 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+
+  s.add_development_dependency('activerecord', [">= 3.0.10"])
+  s.add_development_dependency('sqlite3')
 end
