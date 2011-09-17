@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # http://www.faqs.org/rfcs/rfc2822.html
 module RFC2822
   EmailAddress = begin
@@ -22,7 +23,7 @@ module RFC2822
     obs_domain = "#{atom}([.]#{atom})*"
     domain = "(?:#{dot_atom}|#{domain_literal}|#{obs_domain})"
     addr_spec = "#{local_part}\@#{domain}"
-    pattern = /#{addr_spec}/
+    pattern = Regexp.new addr_spec, nil, 'n'
   end
 end
 
