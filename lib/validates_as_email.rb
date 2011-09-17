@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 # validates_as_email.rb - implement the validation of email
-#  
+#
 #  Copyright (c) 2006 O.S. Systems
-#  
+#
 #  Author: Luis Gustavo S. Barreto <gustavo@ossystems.com.br>
-# 
+#
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2 of the License, or
@@ -36,7 +37,7 @@ module RFC2822
     return true if email.blank?
 
     host = email.split("@")[1]
-    
+
     # Verifica se o host existe
     Socket.gethostbyname(host)
 
@@ -80,7 +81,7 @@ module RFC2822
       out =~ /^250/ ? true : nil
     else
       return nil
-    end 
+    end
   end
 end
 
@@ -93,7 +94,7 @@ module ActiveRecord
           :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
           :multiple => false,
           :blacklist => []
-          }
+        }
         configuration.update(attr_names.pop) if attr_names.last.is_a?(Hash)
 
         validates_each(attr_names, configuration) do |record, attr_name, value|

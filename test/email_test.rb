@@ -56,18 +56,18 @@ class EmailsTest < Test::Unit::TestCase
     assert EmailOffline.new(:mail => '').valid?, "string vazia eh valida mas foi rejeitada"
     assert EmailOffline.new(:mail => nil).valid?, "nil eh valido mas foi rejeitado"
   end
-  
+
   def test_email_obrigatorio
     assert !EmailOfflineObrigatorio.new(:mail => '').valid?, "e-mail obrigatorio de valor vazio passou na validacao"
     assert !EmailOfflineObrigatorio.new(:mail => nil).valid?, "e-mail obrigatorio de valor nulo passou na validacao"
   end
-  
+
   def test_email_invalido_offline
     addresses = [
       '-- dave --@example.com', # (spaces are invalid unless enclosed in quotation marks)
       '[dave]@example.com', # (square brackets are invalid, unless contained within quotation marks)
       '.dave@example.com', # (the local part of a domain name cannot start with a period)
-      'Max@Job 3:14', 
+      'Max@Job 3:14',
       'Job@Book of Job',
       'J. P. \'s-Gravezande, a.k.a. The Hacker!@example.com',
       ]
@@ -83,7 +83,7 @@ class EmailsTest < Test::Unit::TestCase
       '"[[ dave ]]"@example.com',
       'dave."dave"@example.com',
       'test@localhost',
-      'test@example.com', 
+      'test@example.com',
       'test@example.co.uk',
       'test@example.com.br',
       '"J. P. \'s-Gravezande, a.k.a. The Hacker!"@example.com',
@@ -106,12 +106,12 @@ class EmailsTest < Test::Unit::TestCase
     address = "gustavosbarreto@gmail.com"
     assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas a conta existe"
   end
-  
+
   def test_alias_valido_online
     address = "redirecionamento@boaideia.inf.br"
     assert EmailOnline.new(:mail => address).valid?, "rejeitou #{address}, mas o redirecionamento existe"
   end
-  
+
   def test_email_sintaxe_valida_mas_host_sem_mx
     address = "validates_as_email@localhost"
     assert !EmailOnline.new(:mail => address).valid?, "localhost deve ter mx ou smtp rodando, nao devia para passar neste teste"
