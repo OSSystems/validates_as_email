@@ -15,14 +15,14 @@ module RFC2822
     word = "(?:#{atom}|#{quoted_string})"
     obs_local_part = "#{word}([.]#{word})*"
     local_part = "(?:#{dot_atom}|#{quoted_string}|#{obs_local_part})"
-    no_ws_ctl = "\\x01-\\x08\\x11\\x12\\x14-\\x1f\\x7f"    
+    no_ws_ctl = "\\x01-\\x08\\x11\\x12\\x14-\\x1f\\x7f"
     dtext = "[#{no_ws_ctl}\\x21-\\x5a\\x5e-\\x7e]"
     dcontent = "(?:#{dtext}|#{quoted_pair})"
     domain_literal = "\\[#{dcontent}+\\]"
     obs_domain = "#{atom}([.]#{atom})*"
     domain = "(?:#{dot_atom}|#{domain_literal}|#{obs_domain})"
     addr_spec = "#{local_part}\@#{domain}"
-    pattern = /^#{addr_spec}$/
+    pattern = /#{addr_spec}/
   end
 end
 
@@ -31,7 +31,7 @@ addresses = [
   '-- dave --@example.com', # (spaces are invalid unless enclosed in quotation marks)
   '[dave]@example.com', # (square brackets are invalid, unless contained within quotation marks)
   '.dave@example.com', # (the local part of a domain name cannot start with a period)
-  'Max@Job 3:14', 
+  'Max@Job 3:14',
   'Job@Book of Job',
   'J. P. \'s-Gravezande, a.k.a. The Hacker!@example.com',
   ]
@@ -50,7 +50,7 @@ addresses = [
   '"[[ dave ]]"@example.com',
   'dave."dave"@example.com',
   'test@localhost',
-  'test@example.com', 
+  'test@example.com',
   'test@example.co.uk',
   'test@example.com.br',
   '"J. P. \'s-Gravezande, a.k.a. The Hacker!"@example.com',
