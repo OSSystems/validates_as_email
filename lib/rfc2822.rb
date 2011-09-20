@@ -25,6 +25,71 @@ module RFC2822
     addr_spec = "#{local_part}\@#{domain}"
     pattern = Regexp.new addr_spec, nil, 'n'
   end
+
+  class << self
+    def check_addr_spec(email = nil)
+      # apenas valida o formato do email...
+      email =~ RFC2822::EmailAddress
+    end
+
+    def check_addr_online(email = nil)
+      return true if email.blank?
+
+      host = email.split("@")[1]
+
+      # Verifica se o host existe
+      Socket.gethostbyname(host)
+
+      socket = Socket.new(AF_INET, SOCK_STREAM, 0)
+
+      dns =  Resolv::DNS.new.getresources(host, Resolv::DNS::Resource::IN::MX)
+      mx_record = dns[0].exchange.to_s unless dns.empty?
+
+      # Se o host nao tiver um MX Record usa o proprio host como SMTP
+      smtp_server = mx_record == nil ? host : mx_record
+      sockaddr = Socket.pack_sockaddr_in(25, smtp_server)
+
+      debug "#{Time.now} connecting to #{smtp_server} ------"
+      socket.connect(sockaddr)
+
+      # Conectou? estamos prontos pra conversar?
+      if socket.recvfrom(255).to_s.chomp =~ /^220/
+        # Conversando...
+        debug "#{Time.now} HELO #{host}"
+        socket.write("HELO #{host}\r\n")
+        out = socket.recvfrom(255).to_s.chomp
+        debug "#{Time.now} #{out}"
+
+        debug "#{Time.now} MAIL FROM: <#{email}>"
+        socket.write("MAIL FROM: <#{email}>\r\n")
+        out = socket.recvfrom(255).to_s.chomp
+        debug "#{Time.now} #{out}"
+
+        debug "#{Time.now} RCPT TO: <#{email}>"
+        socket.write("RCPT TO: <#{email}>\r\n")
+        out = socket.recvfrom(255).to_s.chomp
+        debug "#{Time.now} #{out}"
+
+        # Foi um prazer
+        debug "#{Time.now} QUIT"
+        socket.write("QUIT\r\n")
+        debug "#{Time.now} #{socket.recvfrom(255).to_s.chomp}"
+        socket.close
+
+        # Se a ultima coisa que o SMTP server enviou comecar com 250 o email existe, se não...
+        out =~ /^250/ ? true : nil
+      else
+        return nil
+      end
+    end
+
+    private
+    def debug(message)
+      if defined? RAILS_DEFAULT_LOGGER
+        RAILS_DEFAULT_LOGGER.debug message
+      end
+    end
+  end
 end
 
 =begin

@@ -20,6 +20,9 @@
 # SMTP: Simple Mail Transfer Protocol - http://cr.yp.to/smtp.html
 # MX Record - http://en.wikipedia.org/wiki/MX_record
 
+require 'active_support/concern'
+require 'active_model'
+
 require 'socket'
 require 'resolv'
 require 'timeout'
@@ -27,108 +30,48 @@ require 'rfc2822'
 
 include Socket::Constants
 
-module RFC2822
-  class << self
-    def check_addr_spec(email = nil)
-      # apenas valida o formato do email...
-      email =~ RFC2822::EmailAddress
+module ValidatesAsEmail
+  extend ActiveSupport::Concern
+
+  class EmailValidator < ActiveModel::EachValidator
+
+    class InvalidEmail < Exception; end
+
+    def initialize(options)
+      options[:message] ||= :invalid
+      options[:timeout] ||= "can't be checked because we can't contact your mail server, wait a minute and try again..."
+      options[:multiple] ||= false
+      options[:blacklist] ||= []
+      super(options)
     end
 
-    def check_addr_online(email = nil)
-      return true if email.blank?
-
-      host = email.split("@")[1]
-
-      # Verifica se o host existe
-      Socket.gethostbyname(host)
-
-      socket = Socket.new(AF_INET, SOCK_STREAM, 0)
-
-      dns =  Resolv::DNS.new.getresources(host, Resolv::DNS::Resource::IN::MX)
-      mx_record = dns[0].exchange.to_s unless dns.empty?
-
-      # Se o host nao tiver um MX Record usa o proprio host como SMTP
-      smtp_server = mx_record == nil ? host : mx_record
-      sockaddr = Socket.pack_sockaddr_in(25, smtp_server)
-
-      debug "#{Time.now} connecting to #{smtp_server} ------"
-      socket.connect(sockaddr)
-
-      # Conectou? estamos prontos pra conversar?
-      if socket.recvfrom(255).to_s.chomp =~ /^220/
-        # Conversando...
-        debug "#{Time.now} HELO #{host}"
-        socket.write("HELO #{host}\r\n")
-        out = socket.recvfrom(255).to_s.chomp
-        debug "#{Time.now} #{out}"
-
-        debug "#{Time.now} MAIL FROM: <#{email}>"
-        socket.write("MAIL FROM: <#{email}>\r\n")
-        out = socket.recvfrom(255).to_s.chomp
-        debug "#{Time.now} #{out}"
-
-        debug "#{Time.now} RCPT TO: <#{email}>"
-        socket.write("RCPT TO: <#{email}>\r\n")
-        out = socket.recvfrom(255).to_s.chomp
-        debug "#{Time.now} #{out}"
-
-        # Foi um prazer
-        debug "#{Time.now} QUIT"
-        socket.write("QUIT\r\n")
-        debug "#{Time.now} #{socket.recvfrom(255).to_s.chomp}"
-        socket.close
-
-        # Se a ultima coisa que o SMTP server enviou comecar com 250 o email existe, se não...
-        out =~ /^250/ ? true : nil
-      else
-        return nil
-      end
-    end
-
-    private
-    def debug(message)
-      if defined? RAILS_DEFAULT_LOGGER
-        RAILS_DEFAULT_LOGGER.debug message
-      end
-    end
-  end
-end
-
-module ActiveRecord
-  module Validations
-    module ClassMethods
-      class InvalidEmail < Exception; end
-
-      def validates_as_email(*attr_names)
-        configuration = {
-          :message => :invalid,
-          :timeout => "can't be checked because we can't contact your mail server, wait a minute and try again...",
-          :multiple => false,
-          :blacklist => []
-        }
-        configuration.update(attr_names.pop) if attr_names.last.is_a?(Hash)
-
-        validates_each(attr_names, configuration) do |record, attr_name, value|
-          unless value.blank?
-            begin
-              emails = configuration[:multiple] ? value.split(',').collect{|email| email.strip!} : [value]
-              emails.each do |email|
-                # levanta exceção se estiver na blacklist
-                raise InvalidEmail unless configuration[:blacklist].select {|regex| email =~ regex}.empty?
-                # levanta exceção padrao se nao validar o endereco
-                raise InvalidEmail unless RFC2822::check_addr_spec(email)
-                # levanta exceção padrao se for pra validar online e nao passar no teste
-                raise InvalidEmail if configuration[:online] and not RFC2822::check_addr_online(email)
-              end
-            rescue Errno::ETIMEDOUT
-              # pode ocorrer no check_addr_online
-              record.errors.add(attr_name, configuration[:timeout])
-            rescue InvalidEmail, SocketError, Errno::ECONNREFUSED
-              record.errors.add(attr_name, configuration[:message])
-            end
+    def validate_each(record, attribute, value)
+      unless value.blank?
+        begin
+          emails = options[:multiple] ? value.split(',').collect{|email| email.strip!} : [value]
+          emails.each do |email|
+            # levanta exceção se estiver na blacklist
+            raise InvalidEmail unless options[:blacklist].select {|regex| email =~ regex}.empty?
+            # levanta exceção padrao se nao validar o endereco
+            raise InvalidEmail unless RFC2822::check_addr_spec(email)
+            # levanta exceção padrao se for pra validar online e nao passar no teste
+            raise InvalidEmail if options[:online] and not RFC2822::check_addr_online(email)
           end
+        rescue Errno::ETIMEDOUT
+          # pode ocorrer no check_addr_online
+          record.errors.add(attr_name, options[:timeout])
+        rescue InvalidEmail, SocketError, Errno::ECONNREFUSED
+          record.errors.add(attribute, options[:message])
         end
       end
     end
   end
+
+  module ClassMethods
+    def validates_as_email(*attr_names)
+      validates_with EmailValidator, _merge_attributes(attr_names)
+    end
+  end
 end
+
+ActiveRecord::Base.send(:include, ValidatesAsEmail)
